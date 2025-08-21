@@ -39,7 +39,7 @@ func TestExport_ok(t *testing.T) {
 	}
 
 	systemdExporter := Systemd
-	actualOutput, err := env.ToShell(systemdExporter)
+	actualOutput, err := ToShell(env, systemdExporter)
 	if err != nil {
 		t.Fatalf("ToShell() failed: %v", err)
 	}

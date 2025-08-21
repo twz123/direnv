@@ -34,7 +34,7 @@ func GetEnv() Env {
 // CleanContext removes all the direnv-related environment variables. Call
 // this after reverting the environment, otherwise direnv will just be amnesic
 // about the previously-loaded environment.
-func (env Env) CleanContext() {
+func CleanContext(env Env) {
 	delete(env, DIRENV_DIFF)
 	delete(env, DIRENV_DIR)
 	delete(env, DIRENV_FILE)
@@ -71,7 +71,7 @@ func (env Env) Copy() Env {
 
 // ToGoEnv should really be named ToUnixEnv. It turns the env back into a list
 // of "key=value" strings like returns by os.Environ().
-func (env Env) ToGoEnv() []string {
+func ToGoEnv(env Env) []string {
 	goEnv := make([]string, len(env))
 	index := 0
 	for key, value := range env {
@@ -83,7 +83,7 @@ func (env Env) ToGoEnv() []string {
 
 // ToShell outputs the environment into an evaluatable string that is
 // understood by the target shell
-func (env Env) ToShell(shell Shell) (string, error) {
+func ToShell(env Env, shell Shell) (string, error) {
 	e := make(ShellExport)
 
 	for key, value := range env {

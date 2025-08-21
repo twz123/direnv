@@ -275,7 +275,7 @@ func (rc *RC) Load(previousEnv Env) (newEnv Env, err error) {
 	// #nosec
 	cmd := exec.CommandContext(ctx, config.BashPath, "-c", arg)
 	cmd.Dir = wd
-	cmd.Env = newEnv.ToGoEnv()
+	cmd.Env = ToGoEnv(newEnv)
 	cmd.Stdin = stdin
 	cmd.Stderr = os.Stderr
 

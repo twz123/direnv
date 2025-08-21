@@ -83,7 +83,7 @@ func exportCommand(currentEnv Env, args []string, config *Config) (err error) {
 	if toLoad == "" {
 		logStatus(config, "unloading")
 		newEnv = previousEnv.Copy()
-		newEnv.CleanContext()
+		CleanContext(newEnv)
 	} else {
 		newEnv, err = config.EnvFromRC(toLoad, previousEnv)
 		if err != nil {

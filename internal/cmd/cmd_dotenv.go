@@ -60,7 +60,7 @@ func cmdDotEnvAction(_ Env, args []string) (err error) {
 		return err
 	}
 
-	str, err := newenv.ToShell(shell)
+	str, err := ToShell(newenv, shell)
 	if err != nil {
 		return err
 	}

@@ -49,7 +49,7 @@ func cmdExecAction(env Env, args []string, config *Config) (err error) {
 	if previousEnv, err = config.Revert(env); err != nil {
 		return
 	}
-	previousEnv.CleanContext()
+	CleanContext(previousEnv)
 
 	// Load the rc
 	if toLoad := findEnvUp(rcPath, config.LoadDotenv); toLoad != "" {
@@ -68,6 +68,6 @@ func cmdExecAction(env Env, args []string, config *Config) (err error) {
 	}
 
 	// #nosec G204
-	err = syscall.Exec(commandPath, args, newEnv.ToGoEnv())
+	err = syscall.Exec(commandPath, args, ToGoEnv(newEnv))
 	return
 }
