@@ -43,26 +43,21 @@ func NewEnvDiff() *EnvDiff {
 func BuildEnvDiff(e1, e2 Env) *EnvDiff {
 	diff := NewEnvDiff()
 
-	in := func(key string, e Env) bool {
-		_, ok := e[key]
-		return ok
-	}
-
-	for key := range e1 {
+	for key, val1 := range e1.All() {
 		if IgnoredEnv(key) {
 			continue
 		}
-		if e2[key] != e1[key] || !in(key, e2) {
-			diff.Prev[key] = e1[key]
+		if val2, ok := e2.Lookup(key); val2 != val1 || !ok {
+			diff.Prev[key] = val1
 		}
 	}
 
-	for key := range e2 {
+	for key, val2 := range e2.All() {
 		if IgnoredEnv(key) {
 			continue
 		}
-		if e2[key] != e1[key] || !in(key, e1) {
-			diff.Next[key] = e2[key]
+		if val1, ok := e1.Lookup(key); val1 != val2 || !ok {
+			diff.Next[key] = val2
 		}
 	}
 
@@ -104,18 +99,18 @@ func (diff *EnvDiff) ToShell(shell Shell) (string, error) {
 // Patch applies the diff to the given env and returns a new env with the
 // changes applied.
 func (diff *EnvDiff) Patch(env Env) (newEnv Env) {
-	newEnv = make(Env)
+	newEnv = NewEnv()
 
-	for k, v := range env {
-		newEnv[k] = v
+	for k, v := range env.All() {
+		newEnv.Set(k, v)
 	}
 
 	for key := range diff.Prev {
-		delete(newEnv, key)
+		newEnv.Delete(key)
 	}
 
 	for key, value := range diff.Next {
-		newEnv[key] = value
+		newEnv.Set(key, value)
 	}
 
 	return newEnv

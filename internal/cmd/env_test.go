@@ -5,7 +5,8 @@ import (
 )
 
 func TestEnv(t *testing.T) {
-	env := Env{"FOO": "bar"}
+	env := NewEnv()
+	env.Set("FOO", "bar")
 
 	out := env.Serialize()
 
@@ -14,11 +15,11 @@ func TestEnv(t *testing.T) {
 		t.Error("parse error", err)
 	}
 
-	if env2["FOO"] != "bar" {
-		t.Error("FOO != bar", env2["FOO"])
+	if env2.Get("FOO") != "bar" {
+		t.Error("FOO != bar", env2.Get("FOO"))
 	}
 
-	if len(env2) != 1 {
-		t.Error("len != 1", len(env2))
+	if env2.Len() != 1 {
+		t.Error("len != 1", env2.Len())
 	}
 }

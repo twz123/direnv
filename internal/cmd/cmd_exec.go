@@ -61,9 +61,9 @@ func cmdExecAction(env Env, args []string, config *Config) (err error) {
 	}
 
 	var commandPath string
-	commandPath, err = lookPath(command, newEnv["PATH"])
+	commandPath, err = lookPath(command, newEnv.Get("PATH"))
 	if err != nil {
-		err = fmt.Errorf("command '%s' not found on PATH '%s'", command, newEnv["PATH"])
+		err = fmt.Errorf("command '%s' not found on PATH '%s'", command, newEnv.Get("PATH"))
 		return
 	}
 

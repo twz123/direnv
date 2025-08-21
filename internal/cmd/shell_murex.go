@@ -29,7 +29,7 @@ func (sh murex) Hook() (string, error) {
 
 func (sh murex) Dump(env Env) (string, error) {
 	buf := new(bytes.Buffer)
-	err := json.NewEncoder(buf).Encode(env)
+	err := json.NewEncoder(buf).Encode(env.vars)
 	if err != nil {
 		return "", err
 	}

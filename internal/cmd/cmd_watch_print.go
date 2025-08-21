@@ -15,7 +15,7 @@ var CmdWatchPrint = &Cmd{
 
 func cmdWatchPrintAction(env Env, args []string) (err error) {
 	watches := NewFileTimes()
-	watchString, ok := env[DIRENV_WATCHES]
+	watchString, ok := env.Lookup(DIRENV_WATCHES)
 	separator := '\n'
 	if len(args) > 1 && args[1] == "--null" {
 		separator = 0

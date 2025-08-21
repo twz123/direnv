@@ -91,9 +91,9 @@ func LoadConfig(env Env) (config *Config, err error) {
 		Env: env,
 	}
 
-	config.ConfDir = env[DIRENV_CONFIG]
+	config.ConfDir = env.Get(DIRENV_CONFIG)
 	if config.ConfDir == "" {
-		config.ConfDir = xdg.ConfigDir(env, "direnv")
+		config.ConfDir = xdg.ConfigDir(env.vars, "direnv")
 	}
 	if config.ConfDir == "" {
 		err = fmt.Errorf("couldn't find a configuration directory for direnv")
@@ -121,7 +121,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 	// Default log format
 	config.LogFormat = defaultLogFormat
 
-	config.RCFile = env[DIRENV_FILE]
+	config.RCFile = env.Get(DIRENV_FILE)
 
 	config.WhitelistPrefix = make([]string, 0)
 	config.WhitelistExact = make(map[string]bool)
@@ -152,7 +152,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 
 		config.LogColor = os.Getenv("TERM") != "dumb"
 
-		format, ok := env["DIRENV_LOG_FORMAT"]
+		format, ok := env.Lookup("DIRENV_LOG_FORMAT")
 		if ok {
 			config.LogFormat = format
 		} else if logFmt := global.LogFormat; logFmt != "" {
@@ -208,8 +208,8 @@ func LoadConfig(env Env) (config *Config, err error) {
 	}
 
 	if config.BashPath == "" {
-		if env[DIRENV_BASH] != "" {
-			config.BashPath = env[DIRENV_BASH]
+		if env.Get(DIRENV_BASH) != "" {
+			config.BashPath = env.Get(DIRENV_BASH)
 		} else if bashPath != "" {
 			config.BashPath = bashPath
 		} else if config.BashPath, err = exec.LookPath("bash"); err != nil {
@@ -219,7 +219,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 	}
 
 	if config.CacheDir == "" {
-		config.CacheDir = xdg.CacheDir(env, "direnv")
+		config.CacheDir = xdg.CacheDir(env.vars, "direnv")
 	}
 	if config.CacheDir == "" {
 		err = fmt.Errorf("couldn't find a cache directory for direnv")
@@ -227,7 +227,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 	}
 
 	if config.DataDir == "" {
-		config.DataDir = xdg.DataDir(env, "direnv")
+		config.DataDir = xdg.DataDir(env.vars, "direnv")
 	}
 	if config.DataDir == "" {
 		err = fmt.Errorf("couldn't find a data directory for direnv")
@@ -249,13 +249,13 @@ func (config *Config) DenyDir() string {
 
 // LoadedRC returns a RC file if any has been loaded
 func (config *Config) LoadedRC() *RC {
-	if config.Env[DIRENV_FILE] == "" {
+	if config.Env.Get(DIRENV_FILE) == "" {
 		logDebug("RCFile is blank - loadedRC is nil")
 		return nil
 	}
-	rcPath := config.Env[DIRENV_FILE]
+	rcPath := config.Env.Get(DIRENV_FILE)
 
-	timesString := config.Env[DIRENV_WATCHES]
+	timesString := config.Env.Get(DIRENV_WATCHES)
 
 	return RCFromEnv(rcPath, timesString, config)
 }
@@ -264,7 +264,7 @@ func (config *Config) LoadedRC() *RC {
 func (config *Config) EnvFromRC(path string, previousEnv Env) (Env, error) {
 	rc, err := RCFromPath(path, config)
 	if err != nil {
-		return nil, err
+		return Env{}, err
 	}
 	return rc.Load(previousEnv)
 }
@@ -277,12 +277,12 @@ func (config *Config) FindRC() (*RC, error) {
 // Revert undoes the recorded changes (if any) to the supplied environment,
 // returning a new environment
 func (config *Config) Revert(env Env) (Env, error) {
-	if config.Env[DIRENV_DIFF] == "" {
+	if config.Env.Get(DIRENV_DIFF) == "" {
 		return env.Copy(), nil
 	}
-	diff, err := LoadEnvDiff(config.Env[DIRENV_DIFF])
+	diff, err := LoadEnvDiff(config.Env.Get(DIRENV_DIFF))
 	if err == nil {
 		return diff.Reverse().Patch(env), nil
 	}
-	return nil, err
+	return Env{}, err
 }

@@ -27,13 +27,15 @@ func TestEnvDiff(t *testing.T) {
 // Issue #114
 // Check that empty environment variables correctly appear in the diff
 func TestEnvDiffEmptyValue(t *testing.T) {
-	before := Env{}
-	after := Env{"FOO": ""}
+	before := NewEnv()
+	after := NewEnv()
+	after.Set("FOO", "")
 
 	diff := BuildEnvDiff(before, after)
 
-	if !reflect.DeepEqual(diff.Next, map[string]string(after)) {
-		t.Errorf("diff.Next != after (%#+v != %#+v)", diff.Next, after)
+	expected := map[string]string{"FOO": ""}
+	if !reflect.DeepEqual(diff.Next, expected) {
+		t.Errorf("diff.Next != after (%#+v != %#+v)", diff.Next, expected)
 	}
 }
 

@@ -25,7 +25,7 @@ func (sh jsonShell) Export(e ShellExport) (string, error) {
 }
 
 func (sh jsonShell) Dump(env Env) (string, error) {
-	out, err := json.MarshalIndent(env, "", "  ")
+	out, err := json.MarshalIndent(env.vars, "", "  ")
 	if err != nil {
 		return "", err
 	}

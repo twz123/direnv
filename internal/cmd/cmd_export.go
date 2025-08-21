@@ -92,7 +92,7 @@ func exportCommand(currentEnv Env, args []string, config *Config) (err error) {
 			// but still exit with an error.  This prevents retrying on
 			// every prompt.
 		}
-		if newEnv == nil {
+		if newEnv.vars == nil {
 			// unless of course, the error was in hashing and timestamp loading,
 			// in which case we have to abort because we don't know what timestamp
 			// to put in the diff!

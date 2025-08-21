@@ -41,7 +41,7 @@ func (sh zsh) Export(e ShellExport) (string, error) {
 
 func (sh zsh) Dump(env Env) (string, error) {
 	var out string
-	for key, value := range env {
+	for key, value := range env.All() {
 		out += sh.export(key, value)
 	}
 	return out, nil

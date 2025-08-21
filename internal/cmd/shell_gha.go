@@ -41,16 +41,24 @@ func (sh gha) Export(e ShellExport) (string, error) {
 
 func (sh gha) Dump(env Env) (string, error) {
 	var b strings.Builder
+	var err error
 
-	for key, value := range env {
+	for key, value := range env.All() {
+		if err != nil {
+			break
+		}
 		if !validKeyPattern.MatchString(key) {
 			// Skip invalid environment variable keys
 			fmt.Fprintf(os.Stderr, "direnv: Skipping invalid environment variable key: %s\n", key)
 			continue
 		}
-		if err := sh.export(&b, key, value); err != nil {
-			return "", err
+		if e := sh.export(&b, key, value); e != nil {
+			err = e
 		}
+	}
+
+	if err != nil {
+		return "", err
 	}
 	return b.String(), nil
 }

@@ -55,10 +55,11 @@ func cmdDotEnvAction(_ Env, args []string) (err error) {
 		return err
 	}
 
-	newenv, err = dotenv.Parse(string(data))
+	m, err := dotenv.Parse(string(data))
 	if err != nil {
 		return err
 	}
+	newenv = NewEnvFrom(m)
 
 	str, err := newenv.ToShell(shell)
 	if err != nil {
