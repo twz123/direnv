@@ -214,7 +214,7 @@ func (rc *RC) Load(previousEnv Env) (newEnv Env, err error) {
 		// Record directory changes even if load is disallowed or fails
 		newEnv[DIRENV_DIR] = "-" + filepath.Dir(rc.path)
 		newEnv[DIRENV_FILE] = rc.path
-		newEnv[DIRENV_DIFF] = previousEnv.Diff(newEnv).Serialize()
+		newEnv[DIRENV_DIFF] = BuildEnvDiff(previousEnv, newEnv).Serialize()
 	}()
 
 	// Abort if the file is not allowed

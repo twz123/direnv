@@ -93,11 +93,6 @@ func ToShell(env Env, shell Shell) (string, error) {
 	return shell.Export(e)
 }
 
-// Diff returns the diff between the current env and the passed env
-func (env Env) Diff(other Env) *EnvDiff {
-	return BuildEnvDiff(env, other)
-}
-
 // Fetch tries to get the value associated with the given 'key', or returns
 // the provided default if none is set.
 //

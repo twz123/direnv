@@ -100,11 +100,11 @@ func exportCommand(currentEnv Env, args []string, config *Config) (err error) {
 		}
 	}
 
-	if out := diffStatus(previousEnv.Diff(newEnv)); out != "" && !config.HideEnvDiff {
+	if out := diffStatus(BuildEnvDiff(previousEnv, newEnv)); out != "" && !config.HideEnvDiff {
 		logStatus(config, "export %s", out)
 	}
 
-	diffString, diffErr := currentEnv.Diff(newEnv).ToShell(shell)
+	diffString, diffErr := BuildEnvDiff(currentEnv, newEnv).ToShell(shell)
 	if diffErr != nil {
 		return fmt.Errorf("ToShell() failed: %w", diffErr)
 	}
