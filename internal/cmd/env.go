@@ -93,11 +93,6 @@ func (env Env) ToShell(shell Shell) (string, error) {
 	return shell.Export(e)
 }
 
-// Serialize marshals the env into the gzenv format
-func (env Env) Serialize() string {
-	return gzenv.Marshal(env)
-}
-
 // Diff returns the diff between the current env and the passed env
 func (env Env) Diff(other Env) *EnvDiff {
 	return BuildEnvDiff(env, other)

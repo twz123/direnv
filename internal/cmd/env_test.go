@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"testing"
+
+	"github.com/direnv/direnv/v2/gzenv"
 )
 
 func TestEnv(t *testing.T) {
 	env := Env{"FOO": "bar"}
 
-	out := env.Serialize()
+	out := gzenv.Marshal(env)
 
 	env2, err := LoadEnv(out)
 	if err != nil {
