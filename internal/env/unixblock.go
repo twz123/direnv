@@ -6,31 +6,26 @@ import (
 	"maps"
 )
 
-// Block represents a set of environment variables.
+// Represents a set of environment variables on UNIX operating systems.
 //
 // The underlying representation is hidden so that custom implementations on
 // how to store and retrieve values can be provided later on.
-type Block struct {
+type UNIXBlock struct {
 	vars map[string]string
-}
-
-// FromMap builds a Block from a map.
-func FromMap(m map[string]string) *Block {
-	return &Block{maps.Clone(m)}
 }
 
 // Copy returns a fresh copy of the block. Because the block is a map under the
 // hood, we want to get a copy whenever we mutate it and want to keep the
 // original around.
-func (b *Block) Copy() *Block {
+func (b *UNIXBlock) Copy() *UNIXBlock {
 	if b == nil {
 		return nil
 	}
-	return &Block{maps.Clone(b.vars)}
+	return &UNIXBlock{maps.Clone(b.vars)}
 }
 
 // Set assigns a value to a key in the environment.
-func (b *Block) Set(key, value string) {
+func (b *UNIXBlock) Set(key, value string) {
 	if b.vars == nil {
 		b.vars = map[string]string{key: value}
 	} else {
@@ -39,7 +34,7 @@ func (b *Block) Set(key, value string) {
 }
 
 // Get retrieves a value from the environment. Returns "" if unset.
-func (b *Block) Get(key string) (val string) {
+func (b *UNIXBlock) Get(key string) (val string) {
 	if b != nil {
 		val = b.vars[key]
 	}
@@ -47,7 +42,7 @@ func (b *Block) Get(key string) (val string) {
 }
 
 // Lookup retrieves the value for a key and whether it was present.
-func (b *Block) Lookup(key string) (val string, ok bool) {
+func (b *UNIXBlock) Lookup(key string) (val string, ok bool) {
 	if b != nil {
 		val, ok = b.vars[key]
 
@@ -56,14 +51,14 @@ func (b *Block) Lookup(key string) (val string, ok bool) {
 }
 
 // Delete removes a key from the environment.
-func (b *Block) Delete(key string) {
+func (b *UNIXBlock) Delete(key string) {
 	if b != nil {
 		delete(b.vars, key)
 	}
 }
 
 // Len returns the number of entries in the environment.
-func (b *Block) Len() int {
+func (b *UNIXBlock) Len() int {
 	if b == nil {
 		return 0
 	}
@@ -72,7 +67,7 @@ func (b *Block) Len() int {
 }
 
 // All returns an iterator over all key/value pairs in the environment.
-func (b *Block) All() iter.Seq2[string, string] {
+func (b *UNIXBlock) All() iter.Seq2[string, string] {
 	return func(yield func(string, string) bool) {
 		for k, v := range b.vars {
 			if !yield(k, v) {
@@ -82,7 +77,7 @@ func (b *Block) All() iter.Seq2[string, string] {
 	}
 }
 
-func (b *Block) MarshalJSON() ([]byte, error) {
+func (b *UNIXBlock) MarshalJSON() ([]byte, error) {
 	if len(b.vars) < 1 {
 		return []byte("{}"), nil
 	}
@@ -90,6 +85,6 @@ func (b *Block) MarshalJSON() ([]byte, error) {
 	return json.Marshal(b.vars)
 }
 
-func (b *Block) UnmarshalJSON(bytes []byte) error {
+func (b *UNIXBlock) UnmarshalJSON(bytes []byte) error {
 	return json.Unmarshal(bytes, &b.vars)
 }
