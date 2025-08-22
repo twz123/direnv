@@ -21,7 +21,7 @@ func cmdCurrentAction(env Env, args []string) (err error) {
 
 	path := args[1]
 	watches := NewFileTimes()
-	watchString, ok := env[DIRENV_WATCHES]
+	watchString, ok := env.Lookup(DIRENV_WATCHES)
 	if ok {
 		err = watches.Unmarshal(watchString)
 		if err != nil {

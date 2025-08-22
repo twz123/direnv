@@ -17,7 +17,7 @@ var debugging bool
 func setupLogging(env Env) {
 	log.SetFlags(0)
 	log.SetPrefix("")
-	if val, ok := env[DIRENV_DEBUG]; ok && (val == "1" || strings.EqualFold(val, "true")) {
+	if val, ok := env.Lookup(DIRENV_DEBUG); ok && (val == "1" || strings.EqualFold(val, "true")) {
 		debugging = true
 		log.SetFlags(log.Ltime)
 		log.SetPrefix("direnv: ")

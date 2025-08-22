@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/direnv/direnv/v2/internal/env"
 )
 
 func StringPtr(value string) *string {
@@ -22,7 +24,7 @@ func TestCutEncapsulated_ok(t *testing.T) {
 
 func TestExport_ok(t *testing.T) {
 
-	env := Env{
+	env := env.FromMap(map[string]string{
 		"Key":  " just a Value",
 		"Ex1":  `'single quotes ' works like that'`,
 		"Ex2":  `however, you can't use quotes inline`,
@@ -36,7 +38,7 @@ func TestExport_ok(t *testing.T) {
 		"Ex10": `quotes\nallow multi lines`,
 		"Ex11": `'with single quotes around it and '' single quotes in it '''`,
 		"Ex12": `"with quotes around it and quotes "" in "" it"`,
-	}
+	})
 
 	systemdExporter := Systemd
 	actualOutput, err := ToShell(env, systemdExporter)

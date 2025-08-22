@@ -5,6 +5,8 @@ import (
 	"github.com/direnv/direnv/v2/pkg/dotenv"
 	"os"
 	"path/filepath"
+
+	"github.com/direnv/direnv/v2/internal/env"
 )
 
 // CmdDotEnv is `direnv dotenv [SHELL [PATH_TO_DOTENV]]`
@@ -55,10 +57,11 @@ func cmdDotEnvAction(_ Env, args []string) (err error) {
 		return err
 	}
 
-	newenv, err = dotenv.Parse(string(data))
+	m, err := dotenv.Parse(string(data))
 	if err != nil {
 		return err
 	}
+	newenv = env.FromMap(m)
 
 	str, err := ToShell(newenv, shell)
 	if err != nil {

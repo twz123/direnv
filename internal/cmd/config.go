@@ -91,7 +91,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 		Env: env,
 	}
 
-	config.ConfDir = env[DIRENV_CONFIG]
+	config.ConfDir = env.Get(DIRENV_CONFIG)
 	if config.ConfDir == "" {
 		config.ConfDir = xdg.ConfigDir(env, "direnv")
 	}
@@ -121,7 +121,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 	// Default log format
 	config.LogFormat = defaultLogFormat
 
-	config.RCFile = env[DIRENV_FILE]
+	config.RCFile = env.Get(DIRENV_FILE)
 
 	config.WhitelistPrefix = make([]string, 0)
 	config.WhitelistExact = make(map[string]bool)
@@ -152,7 +152,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 
 		config.LogColor = os.Getenv("TERM") != "dumb"
 
-		format, ok := env["DIRENV_LOG_FORMAT"]
+		format, ok := env.Lookup("DIRENV_LOG_FORMAT")
 		if ok {
 			config.LogFormat = format
 		} else if logFmt := global.LogFormat; logFmt != "" {
@@ -198,7 +198,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 		}
 	}
 
-	if ts := env["DIRENV_WARN_TIMEOUT"]; ts != "" {
+	if ts := env.Get("DIRENV_WARN_TIMEOUT"); ts != "" {
 		timeout, err := time.ParseDuration(ts)
 		if err == nil {
 			config.WarnTimeout = timeout
@@ -208,7 +208,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 	}
 
 	if config.BashPath == "" {
-		if direnvBash := env[DIRENV_BASH]; direnvBash != "" {
+		if direnvBash := env.Get(DIRENV_BASH); direnvBash != "" {
 			config.BashPath = direnvBash
 		} else if bashPath != "" {
 			config.BashPath = bashPath
@@ -249,13 +249,13 @@ func (config *Config) DenyDir() string {
 
 // LoadedRC returns a RC file if any has been loaded
 func (config *Config) LoadedRC() *RC {
-	if config.Env[DIRENV_FILE] == "" {
+	if config.Env.Get(DIRENV_FILE) == "" {
 		logDebug("RCFile is blank - loadedRC is nil")
 		return nil
 	}
-	rcPath := config.Env[DIRENV_FILE]
+	rcPath := config.Env.Get(DIRENV_FILE)
 
-	timesString := config.Env[DIRENV_WATCHES]
+	timesString := config.Env.Get(DIRENV_WATCHES)
 
 	return RCFromEnv(rcPath, timesString, config)
 }
@@ -277,10 +277,10 @@ func (config *Config) FindRC() (*RC, error) {
 // Revert undoes the recorded changes (if any) to the supplied environment,
 // returning a new environment
 func (config *Config) Revert(env Env) (Env, error) {
-	if config.Env[DIRENV_DIFF] == "" {
+	if config.Env.Get(DIRENV_DIFF) == "" {
 		return env.Copy(), nil
 	}
-	diff, err := LoadEnvDiff(config.Env[DIRENV_DIFF])
+	diff, err := LoadEnvDiff(config.Env.Get(DIRENV_DIFF))
 	if err == nil {
 		return diff.Reverse().Patch(env), nil
 	}

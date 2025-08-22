@@ -4,10 +4,12 @@ import (
 	"testing"
 
 	"github.com/direnv/direnv/v2/gzenv"
+	"github.com/direnv/direnv/v2/internal/env"
 )
 
 func TestEnv(t *testing.T) {
-	env := Env{"FOO": "bar"}
+	env := new(env.Block)
+	env.Set("FOO", "bar")
 
 	out := gzenv.Marshal(env)
 
@@ -17,11 +19,11 @@ func TestEnv(t *testing.T) {
 		t.Error("parse error", err)
 	}
 
-	if foo := env2["FOO"]; foo != "bar" {
+	if foo := env2.Get("FOO"); foo != "bar" {
 		t.Error("FOO != bar", foo)
 	}
 
-	if len(env2) != 1 {
-		t.Error("len != 1", len(env2))
+	if env2.Len() != 1 {
+		t.Error("len != 1", env2.Len())
 	}
 }

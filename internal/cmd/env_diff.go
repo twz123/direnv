@@ -44,11 +44,11 @@ func BuildEnvDiff(e1, e2 Env) *EnvDiff {
 	// Returns all variables in target that differ from or are not included in current.
 	changesFrom := func(current, target Env) map[string]string {
 		changes := make(map[string]string)
-		for key, targetValue := range target {
+		for key, targetValue := range target.All() {
 			if IgnoredEnv(key) {
 				continue
 			}
-			currentValue, present := current[key]
+			currentValue, present := current.Lookup(key)
 			if !present || currentValue != targetValue {
 				changes[key] = targetValue
 			}
@@ -97,18 +97,14 @@ func (diff *EnvDiff) ToShell(shell Shell) (string, error) {
 // Patch applies the diff to the given env and returns a new env with the
 // changes applied.
 func (diff *EnvDiff) Patch(env Env) (newEnv Env) {
-	newEnv = make(Env)
-
-	for k, v := range env {
-		newEnv[k] = v
-	}
+	newEnv = env.Copy()
 
 	for key := range diff.Prev {
-		delete(newEnv, key)
+		newEnv.Delete(key)
 	}
 
 	for key, value := range diff.Next {
-		newEnv[key] = value
+		newEnv.Set(key, value)
 	}
 
 	return newEnv

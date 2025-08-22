@@ -34,7 +34,7 @@ func watchDirCommand(env Env, args []string) (err error) {
 	}
 
 	watches := NewFileTimes()
-	watchString, ok := env[DIRENV_WATCHES]
+	watchString, ok := env.Lookup(DIRENV_WATCHES)
 	if ok {
 		err = watches.Unmarshal(watchString)
 		if err != nil {

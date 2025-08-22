@@ -92,6 +92,7 @@ func exportCommand(currentEnv Env, args []string, config *Config) (err error) {
 			// but still exit with an error.  This prevents retrying on
 			// every prompt.
 		}
+		// FIXME what is this about? Still valid?
 		if newEnv == nil {
 			// unless of course, the error was in hashing and timestamp loading,
 			// in which case we have to abort because we don't know what timestamp

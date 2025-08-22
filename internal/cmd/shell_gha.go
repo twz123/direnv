@@ -42,7 +42,7 @@ func (sh gha) Export(e ShellExport) (string, error) {
 func (sh gha) Dump(env Env) (string, error) {
 	var b strings.Builder
 
-	for key, value := range env {
+	for key, value := range env.All() {
 		if !validKeyPattern.MatchString(key) {
 			// Skip invalid environment variable keys
 			fmt.Fprintf(os.Stderr, "direnv: Skipping invalid environment variable key: %s\n", key)

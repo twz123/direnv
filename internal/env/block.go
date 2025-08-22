@@ -1,17 +1,95 @@
 package env
 
-// Block is a map representation of environment variables.
-type Block map[string]string
+import (
+	"encoding/json"
+	"iter"
+	"maps"
+)
 
-// Copy returns a fresh copy of the env. Because the env is a map under the
+// Block represents a set of environment variables.
+//
+// The underlying representation is hidden so that custom implementations on
+// how to store and retrieve values can be provided later on.
+type Block struct {
+	vars map[string]string
+}
+
+// FromMap builds a Block from a map.
+func FromMap(m map[string]string) *Block {
+	return &Block{maps.Clone(m)}
+}
+
+// Copy returns a fresh copy of the block. Because the block is a map under the
 // hood, we want to get a copy whenever we mutate it and want to keep the
 // original around.
-func (env Block) Copy() Block {
-	newEnv := make(Block)
+func (b *Block) Copy() *Block {
+	if b == nil {
+		return nil
+	}
+	return &Block{maps.Clone(b.vars)}
+}
 
-	for key, value := range env {
-		newEnv[key] = value
+// Set assigns a value to a key in the environment.
+func (b *Block) Set(key, value string) {
+	if b.vars == nil {
+		b.vars = map[string]string{key: value}
+	} else {
+		b.vars[key] = value
+	}
+}
+
+// Get retrieves a value from the environment. Returns "" if unset.
+func (b *Block) Get(key string) (val string) {
+	if b != nil {
+		val = b.vars[key]
+	}
+	return
+}
+
+// Lookup retrieves the value for a key and whether it was present.
+func (b *Block) Lookup(key string) (val string, ok bool) {
+	if b != nil {
+		val, ok = b.vars[key]
+
+	}
+	return
+}
+
+// Delete removes a key from the environment.
+func (b *Block) Delete(key string) {
+	if b != nil {
+		delete(b.vars, key)
+	}
+}
+
+// Len returns the number of entries in the environment.
+func (b *Block) Len() int {
+	if b == nil {
+		return 0
 	}
 
-	return newEnv
+	return len(b.vars)
+}
+
+// All returns an iterator over all key/value pairs in the environment.
+func (b *Block) All() iter.Seq2[string, string] {
+	return func(yield func(string, string) bool) {
+		for k, v := range b.vars {
+			if !yield(k, v) {
+				return
+			}
+		}
+	}
+}
+
+func (b *Block) MarshalJSON() ([]byte, error) {
+	if len(b.vars) < 1 {
+		return []byte("{}"), nil
+	}
+
+	return json.Marshal(b.vars)
+}
+
+func (b *Block) UnmarshalJSON(bytes []byte) error {
+	return json.Unmarshal(bytes, &b.vars)
 }

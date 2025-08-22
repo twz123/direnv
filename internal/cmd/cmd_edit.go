@@ -47,10 +47,10 @@ func cmdEditAction(env Env, args []string, config *Config) (err error) {
 		rcPath = foundRC.path
 	}
 
-	editor := env["EDITOR"]
+	editor := env.Get("EDITOR")
 	if editor == "" {
 		logError(config, "$EDITOR not found.")
-		editor = detectEditor(env["PATH"])
+		editor = detectEditor(env.Get("PATH"))
 		if editor == "" {
 			err = fmt.Errorf("could not find a default editor in the PATH")
 			return

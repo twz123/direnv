@@ -3,6 +3,8 @@ package cmd
 import (
 	"reflect"
 	"testing"
+
+	"github.com/direnv/direnv/v2/internal/env"
 )
 
 func TestEnvDiff(t *testing.T) {
@@ -27,13 +29,14 @@ func TestEnvDiff(t *testing.T) {
 // Issue #114
 // Check that empty environment variables correctly appear in the diff
 func TestEnvDiffEmptyValue(t *testing.T) {
-	before := Env{}
-	after := Env{"FOO": ""}
+	var before, after env.Block
+	after.Set("FOO", "")
 
-	diff := BuildEnvDiff(before, after)
+	diff := BuildEnvDiff(&before, &after)
 
-	if !reflect.DeepEqual(diff.Next, map[string]string(after)) {
-		t.Errorf("diff.Next != after (%#+v != %#+v)", diff.Next, after)
+	expected := map[string]string{"FOO": ""}
+	if !reflect.DeepEqual(diff.Next, expected) {
+		t.Errorf("diff.Next != after (%#+v != %#+v)", diff.Next, expected)
 	}
 }
 
