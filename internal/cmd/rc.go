@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -282,7 +283,7 @@ func (rc *RC) Load(previousEnv Env) (newEnv Env, err error) {
 	var out []byte
 	if out, err = cmd.Output(); err == nil && len(out) > 0 {
 		var newEnv2 Env
-		newEnv2, err = LoadEnvJSON(out)
+		err = json.Unmarshal(out, &newEnv2)
 		if err == nil {
 			newEnv = newEnv2
 		}

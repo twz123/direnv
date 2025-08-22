@@ -11,7 +11,8 @@ func TestEnv(t *testing.T) {
 
 	out := gzenv.Marshal(env)
 
-	env2, err := LoadEnv(out)
+	var env2 Env
+	err := gzenv.Unmarshal(out, &env2)
 	if err != nil {
 		t.Error("parse error", err)
 	}

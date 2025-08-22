@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+
+	"github.com/direnv/direnv/v2/gzenv"
 )
 
 // CmdApplyDump is `direnv apply_dump FILE`
@@ -29,7 +31,8 @@ func cmdApplyDumpAction(env Env, args []string) (err error) {
 		return err
 	}
 
-	dumpedEnv, err := LoadEnv(string(dumped))
+	var dumpedEnv Env
+	err = gzenv.Unmarshal(string(dumped), &dumpedEnv)
 	if err != nil {
 		return err
 	}

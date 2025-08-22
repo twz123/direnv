@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"os"
 	"strings"
 
-	"github.com/direnv/direnv/v2/gzenv"
 	"github.com/direnv/direnv/v2/internal/env"
 )
 
@@ -43,20 +41,6 @@ func CleanContext(env Env) {
 	delete(env, DIRENV_FILE)
 	delete(env, DIRENV_DUMP_FILE_PATH)
 	delete(env, DIRENV_WATCHES)
-}
-
-// LoadEnv unmarshals the env back from a gzenv string
-func LoadEnv(gzenvStr string) (env Env, err error) {
-	env = make(Env)
-	err = gzenv.Unmarshal(gzenvStr, &env)
-	return
-}
-
-// LoadEnvJSON unmarshals the env back from a JSON string
-func LoadEnvJSON(jsonBytes []byte) (env Env, err error) {
-	env = make(Env)
-	err = json.Unmarshal(jsonBytes, &env)
-	return env, err
 }
 
 // ToGoEnv should really be named ToUnixEnv. It turns the env back into a list
