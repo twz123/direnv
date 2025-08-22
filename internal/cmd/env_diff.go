@@ -41,32 +41,25 @@ func NewEnvDiff() *EnvDiff {
 // BuildEnvDiff analyses the changes between 'e1' and 'e2' and builds an
 // EnvDiff out of it.
 func BuildEnvDiff(e1, e2 Env) *EnvDiff {
-	diff := NewEnvDiff()
-
-	in := func(key string, e Env) bool {
-		_, ok := e[key]
-		return ok
+	// Returns all variables in target that differ from or are not included in current.
+	changesFrom := func(current, target Env) map[string]string {
+		changes := make(map[string]string)
+		for key, targetValue := range target {
+			if IgnoredEnv(key) {
+				continue
+			}
+			currentValue, present := current[key]
+			if !present || currentValue != targetValue {
+				changes[key] = targetValue
+			}
+		}
+		return changes
 	}
 
-	for key := range e1 {
-		if IgnoredEnv(key) {
-			continue
-		}
-		if e2[key] != e1[key] || !in(key, e2) {
-			diff.Prev[key] = e1[key]
-		}
+	return &EnvDiff{
+		changesFrom(e2, e1),
+		changesFrom(e1, e2),
 	}
-
-	for key := range e2 {
-		if IgnoredEnv(key) {
-			continue
-		}
-		if e2[key] != e1[key] || !in(key, e1) {
-			diff.Next[key] = e2[key]
-		}
-	}
-
-	return diff
 }
 
 // LoadEnvDiff unmarshalls a gzenv string back into an EnvDiff.
