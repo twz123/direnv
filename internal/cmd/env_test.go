@@ -16,8 +16,8 @@ func TestEnv(t *testing.T) {
 		t.Error("parse error", err)
 	}
 
-	if env2["FOO"] != "bar" {
-		t.Error("FOO != bar", env2["FOO"])
+	if foo := env2["FOO"]; foo != "bar" {
+		t.Error("FOO != bar", foo)
 	}
 
 	if len(env2) != 1 {

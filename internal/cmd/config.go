@@ -208,8 +208,8 @@ func LoadConfig(env Env) (config *Config, err error) {
 	}
 
 	if config.BashPath == "" {
-		if env[DIRENV_BASH] != "" {
-			config.BashPath = env[DIRENV_BASH]
+		if direnvBash := env[DIRENV_BASH]; direnvBash != "" {
+			config.BashPath = direnvBash
 		} else if bashPath != "" {
 			config.BashPath = bashPath
 		} else if config.BashPath, err = exec.LookPath("bash"); err != nil {
