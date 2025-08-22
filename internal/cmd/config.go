@@ -198,7 +198,7 @@ func LoadConfig(env Env) (config *Config, err error) {
 		}
 	}
 
-	if ts := env.Fetch("DIRENV_WARN_TIMEOUT", ""); ts != "" {
+	if ts := env["DIRENV_WARN_TIMEOUT"]; ts != "" {
 		timeout, err := time.ParseDuration(ts)
 		if err == nil {
 			config.WarnTimeout = timeout

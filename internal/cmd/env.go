@@ -92,15 +92,3 @@ func ToShell(env Env, shell Shell) (string, error) {
 
 	return shell.Export(e)
 }
-
-// Fetch tries to get the value associated with the given 'key', or returns
-// the provided default if none is set.
-//
-// Note that empty environment variables are considered to be set.
-func (env Env) Fetch(key, def string) string {
-	v, ok := env[key]
-	if !ok {
-		v = def
-	}
-	return v
-}
