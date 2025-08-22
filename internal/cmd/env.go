@@ -6,10 +6,13 @@ import (
 	"strings"
 
 	"github.com/direnv/direnv/v2/gzenv"
+	"github.com/direnv/direnv/v2/internal/env"
 )
 
 // Env is a map representation of environment variables.
-type Env map[string]string
+//
+// Deprecated: Use env.Block directly.
+type Env = env.Block
 
 // GetEnv turns the classic unix environment variables into a map of
 // key->values which is more handy to work with.
@@ -54,19 +57,6 @@ func LoadEnvJSON(jsonBytes []byte) (env Env, err error) {
 	env = make(Env)
 	err = json.Unmarshal(jsonBytes, &env)
 	return env, err
-}
-
-// Copy returns a fresh copy of the env. Because the env is a map under the
-// hood, we want to get a copy whenever we mutate it and want to keep the
-// original around.
-func (env Env) Copy() Env {
-	newEnv := make(Env)
-
-	for key, value := range env {
-		newEnv[key] = value
-	}
-
-	return newEnv
 }
 
 // ToGoEnv should really be named ToUnixEnv. It turns the env back into a list
