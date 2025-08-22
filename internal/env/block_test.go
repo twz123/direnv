@@ -9,7 +9,7 @@ import (
 )
 
 func TestBlock_Marshal_New(t *testing.T) {
-	b, err := json.Marshal(new(env.Block))
+	b, err := json.Marshal(new(env.WindowsBlock))
 	if err != nil {
 		t.Fatal(err)
 	}
