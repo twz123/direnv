@@ -8,7 +8,11 @@ import (
 )
 
 func TestEnvDiff(t *testing.T) {
-	diff := &EnvDiff{map[string]string{"FOO": "bar"}, map[string]string{"BAR": "baz"}}
+	var e1, e2 env.WindowsBlock
+	e1.Set("FOO", "bar")
+	e2.Set("BAR", "upper")
+
+	diff := BuildEnvDiff(&e1, &e2)
 
 	out := diff.Serialize()
 
@@ -17,12 +21,32 @@ func TestEnvDiff(t *testing.T) {
 		t.Error("parse error", err)
 	}
 
-	if len(diff2.Prev) != 1 {
-		t.Error("len(diff2.prev) != 1", len(diff2.Prev))
+	want := &EnvDiff{[]envDiff{
+		{"-FOO", "bar"},
+		{"+BAR", "upper"},
+	}}
+	if !reflect.DeepEqual(diff2, want) {
+		t.Errorf("Unexpected diff: want %#+v, got %#+v", want, diff2)
+	}
+}
+
+func TestBuildEnvDiff_Windows(t *testing.T) {
+	var e1, e2 env.WindowsBlock
+	e1.Set("Path", "orig")
+	e2.Set("PATH", "upper")
+
+	diff := BuildEnvDiff(&e1, &e2)
+
+	out := diff.Serialize()
+
+	diff2, err := LoadEnvDiff(out)
+	if err != nil {
+		t.Error("parse error", err)
 	}
 
-	if len(diff2.Next) != 1 {
-		t.Error("len(diff2.next) != 0", len(diff2.Next))
+	status := diffStatus(diff2)
+	if expected := "~Path"; expected != status {
+		t.Errorf("diffStatus(diff2) != %q %q", expected, status)
 	}
 }
 
@@ -34,9 +58,9 @@ func TestEnvDiffEmptyValue(t *testing.T) {
 
 	diff := BuildEnvDiff(&before, &after)
 
-	expected := map[string]string{"FOO": ""}
-	if !reflect.DeepEqual(diff.Next, expected) {
-		t.Errorf("diff.Next != after (%#+v != %#+v)", diff.Next, expected)
+	want := &EnvDiff{[]envDiff{{"+FOO", ""}}}
+	if !reflect.DeepEqual(diff, want) {
+		t.Errorf("Unexpected diff: want %#+v, got %#+v", want, diff)
 	}
 }
 

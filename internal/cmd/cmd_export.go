@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -117,31 +117,16 @@ func exportCommand(currentEnv Env, args []string, config *Config) (err error) {
 
 // Return a string of +/-/~ indicators of an environment diff
 func diffStatus(oldDiff *EnvDiff) string {
-	if oldDiff.Any() {
-		var out []string
-		for key := range oldDiff.Prev {
-			_, ok := oldDiff.Next[key]
-			if !ok && !direnvKey(key) {
-				out = append(out, "-"+key)
-			}
-		}
+	var s []string
 
-		for key := range oldDiff.Next {
-			_, ok := oldDiff.Prev[key]
-			if direnvKey(key) {
-				continue
-			}
-			if ok {
-				out = append(out, "~"+key)
-			} else {
-				out = append(out, "+"+key)
-			}
+	for _, change := range oldDiff.changes {
+		if !direnvKey(change.name()) {
+			s = append(s, change[0])
 		}
-
-		sort.Strings(out)
-		return strings.Join(out, " ")
 	}
-	return ""
+
+	slices.Sort(s)
+	return strings.Join(s, " ")
 }
 
 func direnvKey(key string) bool {

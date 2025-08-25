@@ -37,7 +37,7 @@ func TestBasicSetGetLookupDelete(t *testing.T) {
 	// FIXME check casing
 
 	// Delete (case-insensitive)
-	b.Delete("PATH")
+	b.Unset("PATH")
 	if _, ok := b.Lookup("Path"); ok {
 		t.Fatalf("variable should be gone")
 	}

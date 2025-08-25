@@ -277,12 +277,16 @@ func (config *Config) FindRC() (*RC, error) {
 // Revert undoes the recorded changes (if any) to the supplied environment,
 // returning a new environment
 func (config *Config) Revert(env Env) (Env, error) {
-	if config.Env.Get(DIRENV_DIFF) == "" {
-		return env.Copy(), nil
+	env = env.Copy()
+
+	if diffValue := config.Env.Get(DIRENV_DIFF); diffValue != "" {
+		diff, err := LoadEnvDiff(config.Env.Get(DIRENV_DIFF))
+		if err != nil {
+			return nil, err
+		}
+
+		diff.Revert(env)
 	}
-	diff, err := LoadEnvDiff(config.Env.Get(DIRENV_DIFF))
-	if err == nil {
-		return diff.Reverse().Patch(env), nil
-	}
-	return nil, err
+
+	return env, nil
 }

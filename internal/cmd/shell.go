@@ -22,12 +22,12 @@ type Shell interface {
 type ShellExport map[string]*string
 
 // Add represents the addition of a new environment variable
-func (e ShellExport) Add(key, value string) {
+func (e ShellExport) Set(key, value string) {
 	e[key] = &value
 }
 
 // Remove represents the removal of a given `key` environment variable.
-func (e ShellExport) Remove(key string) {
+func (e ShellExport) Unset(key string) {
 	e[key] = nil
 }
 

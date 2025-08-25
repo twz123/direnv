@@ -24,7 +24,7 @@ func (b *UNIXBlock) Copy() *UNIXBlock {
 	return &UNIXBlock{maps.Clone(b.vars)}
 }
 
-// Set assigns a value to a key in the environment.
+// Sets the value of the environment variable with the given name.
 func (b *UNIXBlock) Set(key, value string) {
 	if b.vars == nil {
 		b.vars = map[string]string{key: value}
@@ -33,31 +33,39 @@ func (b *UNIXBlock) Set(key, value string) {
 	}
 }
 
-// Get retrieves a value from the environment. Returns "" if unset.
-func (b *UNIXBlock) Get(key string) (val string) {
+// Retrieves the value of the environment variable with the given name. Returns
+// the value, which will be empty if the variable is not present. To distinguish
+// between an empty value and an unset value, use [UNIXBlock.Lookup].
+func (b *UNIXBlock) Get(name string) string {
 	if b != nil {
-		val = b.vars[key]
+		return b.vars[name]
 	}
-	return
+
+	return ""
 }
 
-// Lookup retrieves the value for a key and whether it was present.
-func (b *UNIXBlock) Lookup(key string) (val string, ok bool) {
+// Retrieves the value of the environment variable with the given name. If the
+// variable is present in this block the value (which may be empty) is
+// returned and the boolean is true. Otherwise the returned value will be empty
+// and the boolean will be false.
+func (b *UNIXBlock) Lookup(name string) (string, bool) {
 	if b != nil {
-		val, ok = b.vars[key]
-
+		value, found := b.vars[name]
+		return value, found
 	}
-	return
+	return "", false
 }
 
-// Delete removes a key from the environment.
-func (b *UNIXBlock) Delete(key string) {
-	if b != nil {
-		delete(b.vars, key)
+// Unsets a single environment variable.
+func (b *UNIXBlock) Unset(name string) {
+	if b == nil {
+		return
 	}
+
+	delete(b.vars, name)
 }
 
-// Len returns the number of entries in the environment.
+// Len returns the number of variables in this block.
 func (b *UNIXBlock) Len() int {
 	if b == nil {
 		return 0
@@ -66,11 +74,16 @@ func (b *UNIXBlock) Len() int {
 	return len(b.vars)
 }
 
-// All returns an iterator over all key/value pairs in the environment.
+// Iterates over all variables in this block.
 func (b *UNIXBlock) All() iter.Seq2[string, string] {
+	var vars map[string]string
+	if b != nil {
+		vars = b.vars
+	}
+
 	return func(yield func(string, string) bool) {
-		for k, v := range b.vars {
-			if !yield(k, v) {
+		for name, value := range vars {
+			if !yield(name, value) {
 				return
 			}
 		}

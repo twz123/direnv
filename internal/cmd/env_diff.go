@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/direnv/direnv/v2/gzenv"
@@ -29,49 +30,64 @@ var IgnoredKeys = map[string]bool{
 
 // EnvDiff represents the diff between two environments
 type EnvDiff struct {
-	Prev map[string]string `json:"p"`
-	Next map[string]string `json:"n"`
+	changes []envDiff
 }
 
-// NewEnvDiff is an empty constructor for EnvDiff
-func NewEnvDiff() *EnvDiff {
-	return &EnvDiff{make(map[string]string), make(map[string]string)}
-}
-
-// BuildEnvDiff analyses the changes between 'e1' and 'e2' and builds an
+// BuildEnvDiff analyses the changes between from and to and builds an
 // EnvDiff out of it.
-func BuildEnvDiff(e1, e2 Env) *EnvDiff {
-	// Returns all variables in target that differ from or are not included in current.
-	changesFrom := func(current, target Env) map[string]string {
-		changes := make(map[string]string)
-		for key, targetValue := range target.All() {
-			if IgnoredEnv(key) {
-				continue
-			}
-			currentValue, present := current.Lookup(key)
-			if !present || currentValue != targetValue {
-				changes[key] = targetValue
-			}
+func BuildEnvDiff(from, to Env) *EnvDiff {
+	var diff EnvDiff
+	for name, fromValue := range from.All() {
+		toValue, found := to.Lookup(name)
+		if found {
+			diff.change(name, fromValue, toValue)
+		} else {
+			diff.remove(name, fromValue)
 		}
-		return changes
+	}
+	for name, value := range to.All() {
+		if _, found := from.Lookup(name); !found {
+			diff.add(name, value)
+		}
 	}
 
-	return &EnvDiff{
-		changesFrom(e2, e1),
-		changesFrom(e1, e2),
-	}
+	return &diff
 }
 
 // LoadEnvDiff unmarshalls a gzenv string back into an EnvDiff.
 func LoadEnvDiff(gzenvStr string) (diff *EnvDiff, err error) {
 	diff = new(EnvDiff)
-	err = gzenv.Unmarshal(gzenvStr, diff)
+	err = gzenv.Unmarshal(gzenvStr, &diff.changes)
 	return
 }
 
-// Any returns if the diff contains any changes.
-func (diff *EnvDiff) Any() bool {
-	return len(diff.Prev) > 0 || len(diff.Next) > 0
+type EnvDiffApplier interface {
+	Set(name, value string)
+	Unset(name string)
+}
+
+func (diff *EnvDiff) Apply(applier EnvDiffApplier) {
+	for _, change := range diff.changes {
+		switch change.typ() {
+		case addedToEnv:
+			applier.Set(change.name(), change.value1())
+		case changedInEnv:
+			applier.Set(change.name(), change.value2())
+		case removedFromEnv:
+			applier.Unset(change.name())
+		}
+	}
+}
+
+func (diff *EnvDiff) Revert(applier EnvDiffApplier) {
+	for _, change := range diff.changes {
+		switch change.typ() {
+		case addedToEnv:
+			applier.Unset(change.name())
+		case changedInEnv, removedFromEnv:
+			applier.Set(change.name(), change.value1())
+		}
+	}
 }
 
 // ToShell applies the env diff as a set of commands that are understood by
@@ -79,45 +95,13 @@ func (diff *EnvDiff) Any() bool {
 // the target shell.
 func (diff *EnvDiff) ToShell(shell Shell) (string, error) {
 	e := make(ShellExport)
-
-	for key := range diff.Prev {
-		_, ok := diff.Next[key]
-		if !ok {
-			e.Remove(key)
-		}
-	}
-
-	for key, value := range diff.Next {
-		e.Add(key, value)
-	}
-
+	diff.Apply(e)
 	return shell.Export(e)
-}
-
-// Patch applies the diff to the given env and returns a new env with the
-// changes applied.
-func (diff *EnvDiff) Patch(env Env) (newEnv Env) {
-	newEnv = env.Copy()
-
-	for key := range diff.Prev {
-		newEnv.Delete(key)
-	}
-
-	for key, value := range diff.Next {
-		newEnv.Set(key, value)
-	}
-
-	return newEnv
-}
-
-// Reverse flips the diff so that it applies the other way around.
-func (diff *EnvDiff) Reverse() *EnvDiff {
-	return &EnvDiff{diff.Next, diff.Prev}
 }
 
 // Serialize marshalls the environment diff to the gzenv format.
 func (diff *EnvDiff) Serialize() string {
-	return gzenv.Marshal(diff)
+	return gzenv.Marshal(diff.changes)
 }
 
 //// Utils
@@ -133,3 +117,30 @@ func IgnoredEnv(key string) bool {
 	_, found := IgnoredKeys[key]
 	return found
 }
+
+type envDiffType byte
+
+const (
+	addedToEnv     envDiffType = '+'
+	changedInEnv   envDiffType = '~'
+	removedFromEnv envDiffType = '-'
+)
+
+type envDiff []string
+
+func (d *EnvDiff) add(name, value string) {
+	d.changes = append(d.changes, envDiff([]string{fmt.Sprintf("%c%s", addedToEnv, name), value}))
+}
+
+func (d *EnvDiff) change(name, fromValue, toValue string) {
+	d.changes = append(d.changes, envDiff([]string{fmt.Sprintf("%c%s", changedInEnv, name), fromValue, toValue}))
+}
+
+func (d *EnvDiff) remove(name, oldValue string) {
+	d.changes = append(d.changes, envDiff([]string{fmt.Sprintf("%c%s", removedFromEnv, name), oldValue}))
+}
+
+func (d envDiff) typ() envDiffType { return envDiffType([]string(d)[0][0]) }
+func (d envDiff) name() string     { return []string(d)[0][1:] }
+func (d envDiff) value1() string   { return []string(d)[1] }
+func (d envDiff) value2() string   { return []string(d)[2] }

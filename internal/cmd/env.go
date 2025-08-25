@@ -36,11 +36,11 @@ func GetEnv() Env {
 // this after reverting the environment, otherwise direnv will just be amnesic
 // about the previously-loaded environment.
 func CleanContext(env Env) {
-	env.Delete(DIRENV_DIFF)
-	env.Delete(DIRENV_DIR)
-	env.Delete(DIRENV_FILE)
-	env.Delete(DIRENV_DUMP_FILE_PATH)
-	env.Delete(DIRENV_WATCHES)
+	env.Unset(DIRENV_DIFF)
+	env.Unset(DIRENV_DIR)
+	env.Unset(DIRENV_FILE)
+	env.Unset(DIRENV_DUMP_FILE_PATH)
+	env.Unset(DIRENV_WATCHES)
 }
 
 // ToGoEnv should really be named ToUnixEnv. It turns the env back into a list
@@ -61,7 +61,7 @@ func ToShell(env Env, shell Shell) (string, error) {
 	e := make(ShellExport)
 
 	for key, value := range env.All() {
-		e.Add(key, value)
+		e.Set(key, value)
 	}
 
 	return shell.Export(e)
